@@ -1,0 +1,53 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+import time
+
+driver = webdriver.Chrome(executable_path="") #executable path - you need to write your chromedriverpath.
+driver.maximize_window()
+url = "https://www.lcwaikiki.com/tr-TR/TR"
+
+
+def login(username, password):
+    driver.get(url)
+    driver.find_element(By.CLASS_NAME, "header-dropdown-toggle").click()
+    time.sleep(2)
+    driver.find_element(By.NAME, "email").send_keys('username@gmail.com')
+    driver.find_element(By.NAME, "password").send_keys("password")
+    driver.find_element(By.XPATH, "//*[@id='login']/div/div/div/div/form/button").click()
+    time.sleep(12)
+    mesajx = driver.find_element(By.XPATH, "//*[@id='login']/div/div/div/div/div/p").text
+    return mesajx
+
+mesaj = login("test123@gmail.com", "123456")
+assert "Lütfen e-posta ya da şifrenizi kontrol ediniz." in mesajx
+
+mesaj = login("niko_novikoy@gmail.com", "11111")
+assert "Lütfen e-posta ya da şifrenizi kontrol ediniz." in mesajx
+
+link1 = driver.current_url
+assert "giris" in link1
+
+mesaj = login("niko_novikoy@gmail.com", "852456as")
+print(driver.title)
+
+link2 = driver.current_url
+assert "TR" in link2
+print("Giriş başarılı")
+time.sleep(3)
+
+driver.get("https://www.lcwaikiki.com/tr-TR/TR/lp/32-33-kadin")
+time.sleep(2)
+
+driver.find_element(By.XPATH, "//*[@id='landingPageContainer']/div/div[1]/div[1]/a[2]").click()
+time.sleep(1)
+
+driver.find_element(By.CLASS_NAME, "product-card__title").click()
+driver.find_element(By.XPATH, "//*[@id='option-size']/a[2]").click()
+time.sleep(1)
+driver.find_element(By.XPATH, "add-to-cart button-link add-to-cart-button").click()
+
+
+time.sleep(5)
+driver.quit()
