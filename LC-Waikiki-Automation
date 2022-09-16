@@ -29,7 +29,7 @@ assert "Lütfen e-posta ya da şifrenizi kontrol ediniz." in mesajx
 link1 = driver.current_url
 assert "giris" in link1
 
-mesaj = login("niko_novikoy@gmail.com", "852456as")
+mesaj = login("niko_novikoy@gmail.com", "*******")
 print(driver.title)
 
 link2 = driver.current_url
