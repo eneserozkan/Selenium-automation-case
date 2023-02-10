@@ -1,53 +1,45 @@
+import unittest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 import time
 
-driver = webdriver.Chrome(executable_path="") #executable path - you need to write your chromedriverpath.
-driver.maximize_window()
-url = "https://www.lcwaikiki.com/tr-TR/TR"
+from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
 
-def login(username, password):
-    driver.get(url)
-    driver.find_element(By.CLASS_NAME, "header-dropdown-toggle").click()
-    time.sleep(2)
-    driver.find_element(By.NAME, "email").send_keys('username@gmail.com')
-    driver.find_element(By.NAME, "password").send_keys("password")
-    driver.find_element(By.XPATH, "//*[@id='login']/div/div/div/div/form/button").click()
-    time.sleep(12)
-    mesajx = driver.find_element(By.XPATH, "//*[@id='login']/div/div/div/div/div/p").text
-    return mesajx
+class Test_Check_LcWaikiki(unittest.TestCase):
+    def setUp(self):
+        self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        self.driver.maximize_window()
+        self.driver.get("https://www.lcwaikiki.com/tr-TR/TR")
+        self.driver.implicitly_wait(10)
+        self.wait = WebDriverWait(self.driver, 10)
 
-mesaj = login("test123@gmail.com", "123456")
-assert "Lütfen e-posta ya da şifrenizi kontrol ediniz." in mesajx
+    def test_check_lcwaikiki(self):
+        self.driver.find_element(By.XPATH, "//*[contains(text(),'KADIN')]").click()
+        page_title = self.driver.title
+        self.assertEqual("Kadın Giyim - Kadın Kıyafetleri - LC Waikiki", page_title)
+        self.driver.find_element(By.LINK_TEXT, "Eşofman Altı").click()
+        self.driver.find_element(By.XPATH, "//*[contains(text(),'Beli Lastikli Düz Kadın Jogger Eşofman Altı')]").click()
+        product_page_title = self.driver.title
+        self.assertTrue(product_page_title,
+                        self.driver.find_element(By.XPATH, "//*[contains(text(),'Beli Lastikli Düz Kadın Jogger Eşofman Altı')]"))
 
-mesaj = login("niko_novikoy@gmail.com", "11111")
-assert "Lütfen e-posta ya da şifrenizi kontrol ediniz." in mesajx
+        self.driver.find_element(By.ID, "pd_add_to_cart").click()
+        text_trial = self.driver.find_element(By.ID, "pd_add_to_cart").text
+        assert text_trial == "LÜTFEN BEDEN SEÇİNİZ", "Something seems wrong!"
+        time.sleep(5)
+        self.driver.find_element(By.XPATH, "//*[@id='option-size']/a[1]").click()
+        self.driver.find_element(By.ID, "pd_add_to_cart").click()
+        time.sleep(3)
+        self.assertTrue("Sepetinize 1 adet ürün eklenmiştir.", self.driver.find_element(By.CLASS_NAME, "drop-down-menu__wrapper").text)
+        self.driver.find_element(By.CSS_SELECTOR, ".cart-dropdown:nth-child(3)").click()
+        self.assertIn("Sepetim", self.driver.find_element(By.CSS_SELECTOR, ".cart-dropdown:nth-child(3)").text)
+        self.driver.find_element(By.CLASS_NAME, "main-header-logo").click()
+        main_page = self.driver.title
+        self.assertTrue("LC Waikiki | İlk Alışverişte Kargo Bedava! - LC Waikiki", main_page)
 
-link1 = driver.current_url
-assert "giris" in link1
-
-mesaj = login("niko_novikoy@gmail.com", "*******")
-print(driver.title)
-
-link2 = driver.current_url
-assert "TR" in link2
-print("Giriş başarılı")
-time.sleep(3)
-
-driver.get("https://www.lcwaikiki.com/tr-TR/TR/lp/32-33-kadin")
-time.sleep(2)
-
-driver.find_element(By.XPATH, "//*[@id='landingPageContainer']/div/div[1]/div[1]/a[2]").click()
-time.sleep(1)
-
-driver.find_element(By.CLASS_NAME, "product-card__title").click()
-driver.find_element(By.XPATH, "//*[@id='option-size']/a[2]").click()
-time.sleep(1)
-driver.find_element(By.XPATH, "add-to-cart button-link add-to-cart-button").click()
-
-
-time.sleep(5)
-driver.quit()
+    def tearDown(self):
+        self.driver.quit()
